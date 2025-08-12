@@ -1,29 +1,21 @@
-from tablero import Tablero
-from cli import CLI
+import random
+
 class Jugador:
-    def __init__(self, numero_jugador, nombre=None):
-        """
-        Asigna "X" al primer jugador y "O" al segundo.
-        Si se quiere personalizar, se puede pasar el símbolo directamente.
-        """
-        numero_jugador = int(input("ingresa tu numero de jugador: "))
-        if numero_jugador == 1:
-            self.simbolo = "X"
-        elif numero_jugador == 2:
-            self.simbolo = "O"
+    def __init__(self, numero_jugador, tipo="humano", nombre=None):
+        self.simbolo = "X" if numero_jugador == 1 else "O"
+        self.tipo = tipo
+        self.nombre = nombre or f"Jugador {numero_jugador}"
+
+    def elegir_movimiento(self, tablero):
+        if self.tipo == "humano":
+            while True:
+                try:
+                    posicion = int(input(f"{self.nombre} ({self.simbolo}), elige posición (0-8): "))
+                    if 0 <= posicion <= 8 and tablero.celdas[posicion] == " ":
+                        return posicion
+                    print("¡Posición inválida o ocupada! Intenta de nuevo.")
+                except ValueError:
+                    print("Ingresa un número del 0 al 8.")
         else:
-            raise ValueError("Número de jugador debe ser 1 o 2.")
-
-        self.nombre = nombre
-
-    def elegir_movimiento(self, posicion):
-        try:
-            posicion = int(input(f"{self.nombre} ({self.simbolo}), elige posición (0-8): "))
-            if 0 <= posicion <= 8 and Tablero.celdas[posicion] == " ":
-                return posicion
-                print("¡Posición inválida o ocupada! Intenta de nuevo.")
-        except ValueError:
-            print("Ingresa un número del 0 al 8.")
-if __name__ == "__main__":
-    cli = CLI()
-    cli.iniciar_juego()
+            posiciones_vacias = [i for i, celda in enumerate(tablero.celdas) if celda == " "]
+            return random.choice(posiciones_vacias)
