@@ -1,4 +1,5 @@
 from jugador import Jugador
+
 class Tablero:
     def __init__(self):
         

@@ -1,4 +1,5 @@
 from tablero import Tablero
+from cli import CLI
 class Jugador:
     def __init__(self, numero_jugador, nombre=None):
         """
@@ -23,3 +24,6 @@ class Jugador:
                 print("¡Posición inválida o ocupada! Intenta de nuevo.")
         except ValueError:
             print("Ingresa un número del 0 al 8.")
+if __name__ == "__main__":
+    cli = CLI()
+    cli.iniciar_juego()

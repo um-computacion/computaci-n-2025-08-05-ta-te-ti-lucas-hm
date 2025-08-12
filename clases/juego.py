@@ -1,6 +1,7 @@
 from tablero import Tablero
 from jugador import Jugador
 
+
 class Jueguito:  # Cambiado a mayúscula por convención
     def __init__(self):
         self.tablero = Tablero()
