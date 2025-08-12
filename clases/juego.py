@@ -1,5 +1,5 @@
 from tablero import Tablero
-from jugador import Jugador  # Nota: El nombre de clase debería ser en mayúscula
+from jugador import Jugador
 
 class Jueguito:  # Cambiado a mayúscula por convención
     def __init__(self):
@@ -25,7 +25,7 @@ class Jueguito:  # Cambiado a mayúscula por convención
         Returns:
             bool: True si el movimiento fue válido
         """
-        if not self.juego_terminado and self.tablero.actualizar(posicion, self.jugador_actual.simbolo):
+        if not self.juego_terminado and self.tablero.actualizar_tablero(posicion, self.jugador_actual.simbolo):
             if self.verificar_ganador():
                 self.ganador = self.jugador_actual
                 self.juego_terminado = True
@@ -47,7 +47,7 @@ class Jueguito:  # Cambiado a mayúscula por convención
     def iniciar(self):
         """Método principal para iniciar el juego."""
         while not self.juego_terminado:
-            self.tablero.mostrar()
+            self.tablero.mostrar_tablero()
             
             # Obtener movimiento del jugador actual
             if self.jugador_actual.tipo == "humano":
@@ -61,7 +61,7 @@ class Jueguito:  # Cambiado a mayúscula por convención
                 print("Movimiento inválido. Intenta de nuevo.")
 
         # Mostrar resultado final
-        self.tablero.mostrar()
+        self.tablero.mostrar_tablero()
         if self.ganador:
             print(f"¡Jugador {self.ganador.simbolo} gana!")
         else:

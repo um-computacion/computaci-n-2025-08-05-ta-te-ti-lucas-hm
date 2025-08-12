@@ -1,15 +1,16 @@
 from tablero import Tablero
-from juego import jueguito  # Necesitarás importar la clase Juego
+from juego import Jueguito
 
 class CLI:
     def __init__(self):
-        self.juego = jueguito()  # Creamos una instancia del juego
+        self.juego = Jueguito()
+        self.tablero = Tablero()
     
     def iniciar_juego(self):
         print("¡Bienvenido al Ta-Te-Ti!")
         while True:
             # Mostrar el tablero actual
-            self.juego.tablero_mostrar()
+            Tablero.actualizar_tablero()
             
             # Obtener movimiento del jugador actual
             try:
@@ -18,12 +19,12 @@ class CLI:
                 # Intentar hacer el movimiento
                 if self.juego.hacer_movimiento(posicion):
                     # Verificar si el juego terminó
-                    if self.juego.tablero.hay_ganador():
-                        self.juego.tablero.mostrar()
+                    if self.tablero.hay_ganador():
+                        self.tablero.mostrar_tablero()
                         print(f"¡Jugador {self.juego.jugador_actual.simbolo} gana!")
                         break
-                    elif self.juego.tablero.empate():
-                        self.juego.tablero.mostrar()
+                    elif self.tablero.empate():
+                        self.tablero.mostrar_tablero()
                         print("¡Empate!")
                         break
                 else:
