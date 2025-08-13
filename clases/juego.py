@@ -1,5 +1,5 @@
-from tablero import Tablero
-from jugador import Jugador
+from .tablero import Tablero
+from .jugador import Jugador
 
 class Jueguito:
     def __init__(self):
