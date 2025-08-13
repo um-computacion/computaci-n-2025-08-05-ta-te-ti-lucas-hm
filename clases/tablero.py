@@ -1,3 +1,4 @@
+
 class Tablero:
     def __init__(self):
         self.celdas = [" " for _ in range(9)]

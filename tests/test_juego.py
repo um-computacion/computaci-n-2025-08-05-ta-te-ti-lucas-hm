@@ -1,101 +1,107 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from clases.juego import Jueguito
-from clases.tablero import Tablero
-from clases.jugador import Jugador
 
-class TestJuego(unittest.TestCase):
+class TestJueguito(unittest.TestCase):
     def setUp(self):
-        """Prepara un juego simulado para las pruebas."""
+        """Configuración inicial para cada test"""
+        # Mockeamos las dependencias
+        self.mock_tablero = MagicMock()
+        self.mock_jugador_x = MagicMock()
+        self.mock_jugador_o = MagicMock()
+        
+        # Configuramos los mocks
+        self.mock_jugador_x.simbolo = "X"
+        self.mock_jugador_x.nombre = "Jugador 1"
+        self.mock_jugador_o.simbolo = "O"
+        self.mock_jugador_o.nombre = "IA"
+        
+        # Parcheamos las clases originales
+        self.patcher_tablero = patch('juego.Tablero', return_value=self.mock_tablero)
+        self.patcher_jugador = patch('juego.Jugador')
+        self.patcher_jugador.start().side_effect = [self.mock_jugador_x, self.mock_jugador_o]
+        
+        self.mock_tablero_class = self.patcher_tablero.start()
+        
+        # Instanciamos el juego
         self.juego = Jueguito()
-        # Mock del tablero para controlar su comportamiento
-        self.juego.tablero = MagicMock(spec=Tablero)
-        # Mocks de jugadores
-        self.juego.jugador_x = MagicMock(spec=Jugador)
-        self.juego.jugador_o = MagicMock(spec=Jugador)
-        self.juego.jugador_x.simbolo = "X"
-        self.juego.jugador_o.simbolo = "O"
-
-    # --- Tests de inicialización ---
-    def test_inicializacion_correcta(self):
-        self.assertEqual(self.juego.jugador_actual.simbolo, "X")
-        self.assertIsNone(self.juego.ganador)
-        self.assertFalse(self.juego.juego_terminado)
-
-    # --- Tests de cambiar_turno ---
-    def test_cambiar_turno_de_X_a_O(self):
-        self.juego.jugador_actual = self.juego.jugador_x
-        self.juego.cambiar_turno()
-        self.assertEqual(self.juego.jugador_actual.simbolo, "O")
-
-    def test_cambiar_turno_de_O_a_X(self):
-        self.juego.jugador_actual = self.juego.jugador_o
-        self.juego.cambiar_turno()
-        self.assertEqual(self.juego.jugador_actual.simbolo, "X")
-
-    # --- Tests de hacer_movimiento ---
-    @patch.object(Tablero, 'actualizar', return_value=True)
-    def test_movimiento_valido_cambia_turno(self, mock_actualizar):
-        self.juego.verificar_ganador = MagicMock(return_value=False)
-        self.juego.verificar_empate = MagicMock(return_value=False)
         
-        result = self.juego.hacer_movimiento(4)
-        self.assertTrue(result)
-        mock_actualizar.assert_called_once_with(4, "X")
-        self.assertEqual(self.juego.jugador_actual.simbolo, "O")
-
-    @patch.object(Tablero, 'actualizar', return_value=False)
-    def test_movimiento_invalido_no_cambia_turno(self, mock_actualizar):
-        result = self.juego.hacer_movimiento(4)
-        self.assertFalse(result)
-        mock_actualizar.assert_called_once_with(4, "X")
-        self.assertEqual(self.juego.jugador_actual.simbolo, "X")
-
-    # --- Tests de verificar_ganador ---
-    def test_verificar_ganador_true(self):
-        self.juego.tablero.hay_ganador.return_value = True
-        self.assertTrue(self.juego.verificar_ganador())
-        self.juego.tablero.hay_ganador.assert_called_once()
-
-    def test_verificar_ganador_false(self):
-        self.juego.tablero.hay_ganador.return_value = False
-        self.assertFalse(self.juego.verificar_ganador())
-
-    # --- Tests de verificar_empate ---
-    def test_verificar_empate_true(self):
-        self.juego.tablero.empate.return_value = True
-        self.assertTrue(self.juego.verificar_empate())
-        self.juego.tablero.empate.assert_called_once()
-
-    def test_verificar_empate_false(self):
-        self.juego.tablero.empate.return_value = False
-        self.assertFalse(self.juego.verificar_empate())
-
-    # --- Tests de flujo completo ---
-    @patch.object(Jugador, 'elegir_movimiento', return_value=4)
-    @patch.object(Tablero, 'mostrar')
-    def test_iniciar_juego_humano_vs_humano(self, mock_mostrar, mock_elegir):
-        self.juego.jugador_x.tipo = "humano"
-        self.juego.jugador_o.tipo = "humano"
-        self.juego.tablero.hay_ganador.side_effect = [False, True]  # Segundo movimiento gana
-        self.juego.tablero.empate.return_value = False
+    def tearDown(self):
+        """Limpieza después de cada test"""
+        patch.stopall()
+    
+    def test_inicializacion(self):
+        """Prueba que el juego se inicialice correctamente"""
+        self.mock_tablero_class.assert_called_once()
+        self.assertEqual(self.juego.jugador_actual, self.mock_jugador_x)
+    
+    def test_cambiar_turno(self):
+        """Prueba el cambio de turno entre jugadores"""
+        # Turno inicial es X
+        self.assertEqual(self.juego.jugador_actual, self.mock_jugador_x)
+        
+        # Cambiamos turno
+        self.juego.cambiar_turno()
+        self.assertEqual(self.juego.jugador_actual, self.mock_jugador_o)
+        
+        # Cambiamos de nuevo
+        self.juego.cambiar_turno()
+        self.assertEqual(self.juego.jugador_actual, self.mock_jugador_x)
+    
+    @patch('builtins.print')
+    def test_iniciar_muestra_bienvenida(self, mock_print):
+        """Prueba que se muestre el mensaje de bienvenida"""
+        self.mock_tablero.hay_ganador.return_value = True  # Para terminar inmediatamente
+        self.juego.iniciar()
+        mock_print.assert_any_call("\n¡Bienvenido al Ta-Te-Ti!")
+    
+    def test_jugador_humano_elige_movimiento(self):
+        """Prueba que se llame a elegir_movimiento del jugador actual"""
+        self.mock_tablero.hay_ganador.return_value = True  # Para terminar después de 1 movimiento
+        self.mock_jugador_x.elegir_movimiento.return_value = 0
+        
+        self.juego.iniciar()
+        self.mock_jugador_x.elegir_movimiento.assert_called_once_with(self.mock_tablero)
+    
+    def test_movimiento_valido_actualiza_tablero(self):
+        """Prueba que un movimiento válido actualiza el tablero"""
+        self.mock_tablero.hay_ganador.return_value = True  # Para terminar después de 1 movimiento
+        self.mock_jugador_x.elegir_movimiento.return_value = 0
+        self.mock_tablero.actualizar_tablero.return_value = True
+        
+        self.juego.iniciar()
+        self.mock_tablero.actualizar_tablero.assert_called_once_with(0, "X")
+    
+    def test_movimiento_invalido_muestra_error(self):
+        """Prueba que un movimiento inválido muestra mensaje de error"""
+        self.mock_tablero.hay_ganador.side_effect = [False, True]  # Terminar después de 2 intentos
+        self.mock_jugador_x.elegir_movimiento.side_effect = [0, 1]
+        self.mock_tablero.actualizar_tablero.side_effect = [False, True]
         
         with patch('builtins.print') as mock_print:
             self.juego.iniciar()
-            
-            # Verifica que se mostró el tablero y hubo interacción
-            self.assertGreaterEqual(mock_mostrar.call_count, 1)
-            mock_elegir.assert_called()
-            mock_print.assert_any_call("¡Jugador X gana!")
-
-    @patch.object(Jugador, 'elegir_movimiento', return_value=4)
-    def test_juego_termina_en_empate(self, mock_elegir):
-        self.juego.tablero.hay_ganador.return_value = False
-        self.juego.tablero.empate.return_value = True
+            mock_print.assert_any_call("Movimiento inválido. Intenta de nuevo.")
+    
+    def test_juego_detecta_ganador(self):
+        """Prueba que el juego detecta cuando hay un ganador"""
+        self.mock_tablero.hay_ganador.return_value = True
+        self.mock_jugador_x.elegir_movimiento.return_value = 0
+        self.mock_tablero.actualizar_tablero.return_value = True
         
         with patch('builtins.print') as mock_print:
             self.juego.iniciar()
-            mock_print.assert_called_with("¡Empate!")
+            mock_print.assert_any_call(f"¡{self.mock_jugador_x.nombre} gana!")
+    
+    def test_juego_detecta_empate(self):
+        """Prueba que el juego detecta empate"""
+        self.mock_tablero.hay_ganador.return_value = False
+        self.mock_tablero.empate.return_value = True
+        self.mock_jugador_x.elegir_movimiento.return_value = 0
+        self.mock_tablero.actualizar_tablero.return_value = True
+        
+        with patch('builtins.print') as mock_print:
+            self.juego.iniciar()
+            mock_print.assert_any_call("¡Empate!")
 
 if __name__ == '__main__':
     unittest.main()
